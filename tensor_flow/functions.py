@@ -58,7 +58,7 @@ def pgn_game_count(file_name):
     encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']
     for enc in encodings:
         try:
-            with open(f"Data/{file_name}", 'r', encoding=enc) as f:
+            with open(f"tensor_flow/pgn_files/processing/{file_name}", 'r', encoding=enc) as f:
                 content = f.read()
         except UnicodeDecodeError:
              continue

@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-from piece import * 
-from player import Player
+from old_model.piece import * 
+from old_model.player import Player
 from functions import convert
 
 class Game():

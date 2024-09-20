@@ -7,18 +7,15 @@ import shutil
 from tqdm import tqdm
 import keras
 from keras.optimizers import Adam
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Input, Dropout, BatchNormalization, Activation
 from functions import *
 
-directory = "/Users/leonwindett/VS_CODE/Projects/ChessBot/Data"
-# processed_folder = "Processed_data"
-processed_folder = "Data"
-filename_in = "saved_tensors/chess_pos.npy"
-filename_out = "saved_tensors/next_move.npy"
+directory = "/Users/leonwindett/VS_CODE/Projects/ChessBot/tensor_flow/pgn_files/processing"
+processed_folder = "tensor_flow/pgn_files/processed_data"
+filename_in = "tensor_flow/saved/chess_pos.npy"
+filename_out = "tensor_flow/saved/next_move.npy"
 
-file1 = ""
-file2 = ""
    
 def vectorisation(game):
     board = game.board()
@@ -57,7 +54,7 @@ def data_process(dir): # this processes data in the Data folder and returns two 
         with tqdm(total = total_files, desc = "File Progress") as outer_pbar:
             for name in os.listdir(dir):
 
-                pgn = open(f"Data/{name}")
+                pgn = open(f"tensor_flow/pgn_files/processing/{name}")
                 total_games = pgn_game_count(name)
 
                 with tqdm(total = total_games, desc = f"{name} Game Progress", leave = False) as inner_pbar:
@@ -79,8 +76,12 @@ def data_process(dir): # this processes data in the Data folder and returns two 
                                 continue
                         inner_pbar.update(1)
 
-                    shutil.move(f"Data/{name}", os.path.join(processed_folder, name))
+                    shutil.move(f"tensor_flow/pgn_files/processing/{name}", os.path.join(processed_folder, name))
                     outer_pbar.update(1)
+
+            #To save new tensors uncomment this and choose file name:
+            # save_tensor(input_tensor, "tensor_flow/saved/chess_pos.npy")
+            # save_tensor(target_tensor, "tensor_flow/saved/next_move.npy")
 
             return input_tensor, target_tensor
 
@@ -131,7 +132,7 @@ def ml_prep(input, target):
     return (input_train, target_train), (input_test, target_test)
 
 
-def model(epochs, batch_size, file_in, file_target):
+def model_construction(epochs, batch_size, file_in, file_target):
 
     input_tensor, target_tensor = np.load(file_in), np.load(file_target)
     (input_train, target_train), (input_test, target_test) = ml_prep(input_tensor, target_tensor)
@@ -161,8 +162,6 @@ def model(epochs, batch_size, file_in, file_target):
     
     model.summary()
 
-    # partial_x_train, x_val, partial_y_train, y_val = train_test_split(input_train, target_train, test_size=0.1, random_state=42)
-
 
     history = model.fit(input_train, 
                         target_train, 
@@ -171,6 +170,7 @@ def model(epochs, batch_size, file_in, file_target):
                         validation_split = 0.1,
                         verbose = 1)
     
+
     return model, history
 
 
@@ -210,65 +210,27 @@ def training_acc_plot(history):
     return fig
 
 
+def predict_next_move(board):
+    board_matrix = convert_to_matrix(board)
+    predictions = model.predict(board_matrix)
+    legal_moves = list(board.legal_moves)
+    legal_moves_uci = [move.uci() for move in legal_moves]
+    sorted_indices = np.argsort(predictions)[::-1]
+    for move_index in sorted_indices:
+        move = output_to_move(move_index)
+        if move in legal_moves_uci:
+            return move
+    return None
+
 if __name__ == "__main__":
-    # check_saved(filename_in, filename_out)
+   
+    update(filename_in, filename_out)
 
-
+    model, history = model_construction(epochs = 50, batch_size = 64, file_in = filename_in, file_out = filename_out)
+    model.save("tensor_flow/saved/chess_model1.keras")
     
-    # model1, history = model(1, 1024, filename_in, filename_out)
-    # loss_plot = training_loss_plot(history)
-    # acc_plot = training_acc_plot(history)
-
-    # update(filename_in, filename_out)
-
-    # saved_input = np.load(filename_in)
-    # saved_output = np.load(filename_out)
-
-    # pos = 500000
-
-    # print(output_to_move(saved_output[pos]))
-
-    # pgn = open(f"Data/Baden2015.pgn")
-    # game = cp.read_game(pgn)
-    # inputs, targets = vectorisation(game)
-    # print(inputs[0], output_to_move(targets[0]))
-
-    input, output = data_process(directory)
-    (input_train, target_train), (input_test, target_test) = ml_prep(input, output)
-
-    keras.backend.clear_session()
-    model = Sequential()
-
-    model.add(Input(shape=(8, 8, 12)))
-
-    # model.add(Conv2D(filters = 32, kernel_size = (3, 3), activation = 'relu', padding = 'same'))
-    model.add(Conv2D(filters = 64, kernel_size = (3, 3), activation = 'relu', padding = 'valid'))
-    model.add(Conv2D(filters = 128, kernel_size = (3, 3), activation = 'relu', padding = 'valid'))
     
-    # model.add(MaxPooling2D(pool_size = (2, 2)))
-    # model.add(BatchNormalization())
-
-    model.add(Flatten())
-    model.add(Dense(256, activation = 'relu'))
-    # model.add(Dropout(0.3))
-    # model.add(Dense(512, activation = 'relu'))
-    # model.add(Dropout(0.3))
-    model.add(Dense(4096, activation = 'softmax'))
-
-    model.compile(optimizer = Adam(learning_rate=0.001), 
-                  loss = 'categorical_crossentropy',
-                  metrics = ['accuracy'])
-    
-    model.summary()
-
-    # partial_x_train, x_val, partial_y_train, y_val = train_test_split(input_train, target_train, test_size=0.1, random_state=42)
 
 
-    model.fit(input_train, 
-            target_train, 
-            epochs = 50, 
-            batch_size = 64,
-            validation_split = 0.1)
-    
     plt.show()
 

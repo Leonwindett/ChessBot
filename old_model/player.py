@@ -1,6 +1,6 @@
 """This module contains the player dynamics"""
 
-from piece import *
+from old_model.piece import *
 
 class Player():
     def __init__(self, opp):
