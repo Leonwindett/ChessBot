@@ -9,6 +9,7 @@ import keras
 from keras.optimizers import Adam
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Input, Dropout, BatchNormalization, Activation
+from keras.callbacks import EarlyStopping
 from functions import *
 
 directory = "/Users/leonwindett/VS_CODE/Projects/ChessBot/tensor_flow/pgn_files/processing"
@@ -201,12 +202,18 @@ def model_construction(epochs, batch_size, input_file_type, target_file_type):
     model.add(Dense(256, activation = 'relu'))
     # model.add(Dropout(0.3))
     # model.add(Dense(512, activation = 'relu'))
-    # model.add(Dropout(0.3))
+    model.add(Dropout(0.3))
     model.add(Dense(4096, activation = 'softmax'))
 
     model.compile(optimizer = Adam(learning_rate=0.001), 
                   loss = 'categorical_crossentropy',
                   metrics = ['accuracy'])
+    
+    early_stopping = EarlyStopping(
+    monitor='val_loss',  
+    patience=5,          
+    restore_best_weights=True,  
+)
     
     model.summary()
 
@@ -215,8 +222,9 @@ def model_construction(epochs, batch_size, input_file_type, target_file_type):
                         target_train, 
                         epochs = epochs, 
                         batch_size = batch_size,
-                        validation_split = 0.1,
-                        verbose = 1)
+                        validation_split = 0.2,
+                        verbose = 1, 
+                        callbacks = [early_stopping])
     
 
     return model, history
@@ -260,26 +268,43 @@ def training_acc_plot(history):
 
 def predict_next_move(model, board): 
     board_matrix = convert_to_matrix(board)
+    board_matrix = np.expand_dims(board_matrix, axis=0)
     predictions = model.predict(board_matrix)
     legal_moves = list(board.legal_moves)
     legal_moves_uci = [move.uci() for move in legal_moves]
     sorted_indices = np.argsort(predictions)[::-1]
     for move_index in sorted_indices:
         move = output_to_move(move_index)
+        print(move)
         if move in legal_moves_uci:
             return move
+        
     return None
+
+
 
 if __name__ == "__main__":
    
     # update(filename_in, filename_out)
 
-    model, history = model_construction(epochs = 50, batch_size = 64, input_file_type = "chess_pos", target_file_type = "next_move")
-    model.save("tensor_flow/saved/chess_model1.keras")
+    # model, history = model_construction(epochs = 10, batch_size = 32, input_file_type = "chess_pos", target_file_type = "next_move")
+    # model.save("tensor_flow/saved/chess_model1.keras")
 
+    model = load_model("tensor_flow/saved/chess_model1.keras")
 
-    
+    board = chess.Board()    
 
-
+    while not board.is_game_over():
+        #Computer plays as white (for now)
+        print(board)
+        i = 0
+        if i % 2 == 0:
+            move = predict_next_move(model, board)
+        else: 
+            move = input("Black make your move in UCI format: ")
+        
+        board.push(move)
+        i += 1
+         
     plt.show()
 
