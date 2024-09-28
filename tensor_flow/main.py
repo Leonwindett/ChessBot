@@ -102,8 +102,8 @@ def update(filename1, filename2):
         updated_input = np.concatenate((saved_input, input), axis = 0)
         updated_output = np.concatenate((saved_output, output), axis = 0)
 
-        save_tensor(updated_input, filename_in)
-        save_tensor(updated_output, filename_out)
+        np.save(filename_in, updated_input)
+        np.save(filename_out, updated_output)
 
     print(f"Input shape: {get_array_shape(updated_input)}")
     print(f"Target shape: {get_array_shape(updated_output)}")
@@ -224,10 +224,10 @@ def predict_next_move(board):
 
 if __name__ == "__main__":
    
-    update(filename_in, filename_out)
+    # update(filename_in, filename_out)
 
-    model, history = model_construction(epochs = 50, batch_size = 64, file_in = filename_in, file_out = filename_out)
-    model.save("tensor_flow/saved/chess_model1.keras")
+    # model, history = model_construction(epochs = 50, batch_size = 64, file_in = filename_in, file_out = filename_out)
+    # model.save("tensor_flow/saved/chess_model1.keras")
     
     
 

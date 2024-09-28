@@ -86,3 +86,30 @@ def count_files(directory):
     total_files = sum(1 for entry in all_entries if os.path.isfile(os.path.join(directory, entry)))
 
     return total_files
+
+def tensor_chunk(file_name):
+    tensor = np.load(file_name)
+
+    chunk_size = 349500 # max is 349525
+    total_size = tensor.shape[0]
+    for i in range(0, total_size, chunk_size):
+       chunk = tensor[i: i + chunk_size]
+       np.save(f'{file_name[:-4]}{i//chunk_size}.npy', chunk)
+    os.remove(f"/Users/leonwindett/VS_CODE/Projects/ChessBot/{file_name}")
+
+def combine_tensor_chunk(path_to_tensor, tensor_type): #tensor type is str either chess_pos or next_move
+    files = os.listdir(path_to_tensor)
+
+    matching_files = [f for f in files if tensor_type in f and f.endswith('.npy')]
+    
+    combined_tensor = None
+    
+    for file in matching_files:
+
+        tensor = np.load(f"tensor_flow/saved/{file}")
+        if combined_tensor is None: 
+            combined_tensor = tensor
+        else: 
+            combined_tensor = np.concatenate((combined_tensor, tensor), axis = 0)
+
+    return combined_tensor
