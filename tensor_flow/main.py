@@ -13,8 +13,8 @@ from functions import *
 
 directory = "/Users/leonwindett/VS_CODE/Projects/ChessBot/tensor_flow/pgn_files/processing"
 processed_folder = "tensor_flow/pgn_files/processed_data"
-filename_in = "tensor_flow/saved/chess_pos.npy"
-filename_out = "tensor_flow/saved/next_move.npy"
+saved_dir = "/Users/leonwindett/VS_CODE/Projects/ChessBot/tensor_flow/saved"
+
 
    
 def vectorisation(game):
@@ -86,27 +86,74 @@ def data_process(dir): # this processes data in the Data folder and returns two 
             return input_tensor, target_tensor
 
 
-def update(filename1, filename2):
+def update():
 
+
+    max = 349500 #max number of vectorised game states that can be handled in git lfs
     input, output = data_process(directory) # think about turning into tf tensors if performance needed
 
-    saved_input = np.load(filename1)
-    saved_output = np.load(filename2)
+    chess_pos = [[f, os.path.getsize(f)] for f in os.listdir(saved_dir) if "chess_pos" in f]
+    next_move = [[f, os.path.getsize(f)] for f in os.listdir(saved_dir) if "next_move" in f]
+
+    minimum = 1e10
+    for file in chess_pos:
+        tensor_size = file[1]
+        if tensor_size < minimum:
+            minimum = tensor_size
+            emptiest_file_inputname = file[0]
+            iteration = emptiest_file_inputname[9]
+
+    saved_input = np.load(f"tensor_flow/saved/{emptiest_file_inputname}")
+
+    minimum = 1e10
+    for file in next_move:
+        tensor_size = file[1]
+        if tensor_size < minimum:
+            minimum = tensor_size
+            emptiest_file_outputname = file[0]
+            iteration = emptiest_file_outputname[9]
+
+            
+    saved_output = np.load(f"tensor_flow/saved/{emptiest_file_outputname}")
+
 
     if input is None and output is None:
-        updated_input = saved_input
-        updated_output = saved_output
-        pass
-    
-    else: 
+        return
+        
+    elif input[0] <= (max - saved_input[0]): 
         updated_input = np.concatenate((saved_input, input), axis = 0)
         updated_output = np.concatenate((saved_output, output), axis = 0)
 
-        np.save(filename_in, updated_input)
-        np.save(filename_out, updated_output)
+        np.save(emptiest_file_inputname, updated_input)
+        np.save(emptiest_file_outputname, updated_output)
 
-    print(f"Input shape: {get_array_shape(updated_input)}")
-    print(f"Target shape: {get_array_shape(updated_output)}")
+    elif input[0] > (max - saved_input[0]):
+        input_fill = input[:(max - saved_input[0])]
+        input_remaining = input[(max - saved_input[0]):]
+
+        output_fill = output[:(max - saved_input[0])]
+        output_remaining = output[(max - saved_input[0]):]
+
+        updated_input = np.concatenate((saved_input, input_fill), axis = 0)
+        updated_output = np.concatenate((saved_output, output_fill), axis = 0)
+
+        np.save(emptiest_file_inputname, updated_input)
+        np.save(emptiest_file_outputname, updated_output)
+
+        total_size = input_remaining.shape[0]
+    for i in range(0, total_size, max):
+       input_chunk = input_remaining[i: i + max]
+       output_chunk = output_remaining[i: i + max]
+
+       np.save(f'tensor_flow/saved/chess_pos{(i+iteration)//max}.npy', input_chunk)
+       np.save(f'tensor_flow/saved/next_move{(i+iteration)//max}.npy', output_chunk)
+
+
+    total_input = combine_tensor_chunk(saved_dir, "chess_pos")
+    total_output = combine_tensor_chunk(saved_dir, "next_move")
+
+    print(f"Input shape: {get_array_shape(total_input)}")
+    print(f"Target shape: {get_array_shape(total_output)}")
 
 
 def check_saved(filename1, filename2):
@@ -132,9 +179,10 @@ def ml_prep(input, target):
     return (input_train, target_train), (input_test, target_test)
 
 
-def model_construction(epochs, batch_size, file_in, file_target):
+def model_construction(epochs, batch_size, input_file_type, target_file_type):
 
-    input_tensor, target_tensor = np.load(file_in), np.load(file_target)
+    input_tensor, target_tensor = combine_tensor_chunk(saved_dir, input_file_type), combine_tensor_chunk(saved_dir, target_file_type)
+    print(f"Input size: {input_tensor.shape}, Output size: {target_tensor.shape}")
     (input_train, target_train), (input_test, target_test) = ml_prep(input_tensor, target_tensor)
 
     keras.backend.clear_session()
@@ -151,9 +199,9 @@ def model_construction(epochs, batch_size, file_in, file_target):
 
     model.add(Flatten())
     model.add(Dense(256, activation = 'relu'))
-    model.add(Dropout(0.3))
-    model.add(Dense(512, activation = 'relu'))
-    model.add(Dropout(0.3))
+    # model.add(Dropout(0.3))
+    # model.add(Dense(512, activation = 'relu'))
+    # model.add(Dropout(0.3))
     model.add(Dense(4096, activation = 'softmax'))
 
     model.compile(optimizer = Adam(learning_rate=0.001), 
@@ -210,7 +258,7 @@ def training_acc_plot(history):
     return fig
 
 
-def predict_next_move(board):
+def predict_next_move(model, board): 
     board_matrix = convert_to_matrix(board)
     predictions = model.predict(board_matrix)
     legal_moves = list(board.legal_moves)
@@ -226,9 +274,10 @@ if __name__ == "__main__":
    
     # update(filename_in, filename_out)
 
-    # model, history = model_construction(epochs = 50, batch_size = 64, file_in = filename_in, file_out = filename_out)
-    # model.save("tensor_flow/saved/chess_model1.keras")
-    
+    model, history = model_construction(epochs = 50, batch_size = 64, input_file_type = "chess_pos", target_file_type = "next_move")
+    model.save("tensor_flow/saved/chess_model1.keras")
+
+
     
 
 

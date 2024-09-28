@@ -95,10 +95,9 @@ def tensor_chunk(file_name):
     for i in range(0, total_size, chunk_size):
        chunk = tensor[i: i + chunk_size]
        np.save(f'{file_name[:-4]}{i//chunk_size}.npy', chunk)
-    os.remove(f"/Users/leonwindett/VS_CODE/Projects/ChessBot/{file_name}")
 
-def combine_tensor_chunk(path_to_tensor, tensor_type): #tensor type is str either chess_pos or next_move
-    files = os.listdir(path_to_tensor)
+def combine_tensor_chunk(path_to_tensors, tensor_type): #tensor type is str either chess_pos or next_move
+    files = os.listdir(path_to_tensors)
 
     matching_files = [f for f in files if tensor_type in f and f.endswith('.npy')]
     
