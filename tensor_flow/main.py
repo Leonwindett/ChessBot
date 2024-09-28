@@ -222,7 +222,7 @@ def model_construction(epochs, batch_size, input_file_type, target_file_type):
                         target_train, 
                         epochs = epochs, 
                         batch_size = batch_size,
-                        validation_split = 0.2,
+                        validation_split = 0.1,
                         verbose = 1, 
                         callbacks = [early_stopping])
     
@@ -306,5 +306,5 @@ if __name__ == "__main__":
         board.push(move)
         i += 1
          
-    plt.show()
+    # plt.show()
 
