@@ -30,12 +30,17 @@ The main metrics assessed were accuracy and validation loss.
 
 Throughout the learning process, I encountered and overcame challenges, as expected in machine learning projects.
 
-The primary challenge involved managing the storage of sufficient training data to fine-tune the model. For example, vectorizing approximately 450,000 chess positions and corresponding next moves required 17GB of storage.. Transitioning storage systems to the cloud to support scalability and enhance data management for future machine learning projects will enable more efficient database growth and problem resolution
+The primary challenge involved managing the storage of sufficient training data to fine-tune the model. For example, vectorizing approximately 450,000 chess positions and corresponding next moves required 17GB of storage. Transitioning storage systems to the cloud to support scalability and enhance data management for future machine learning projects will enable more efficient database growth and problem resolution. 
+
+This main challenge led to a model with insignificant accuracy when predicting outcomes for new datasets. I'm going to work on a solution to this problem and gradually update this model. 
 
 Another challenge encountered was uploading saved tensors to GitHub due to their large file size. By enabling the Git LFS (Large File Storage) attribute, I can now update the saved folder, although the process remains time-consuming. If there is interest in the vectorized data, I am open to sharing the files through alternative means.
 
+
 ### 5. Learning Experience
 
-Overall, this has been a great learning experience and has inspired me to delve deeper into the complex intricaces machine learning has to offer. I have planned out a couple Kaggle competitions to complete in the future and I hope to expand my knowledge at a rapid pace. 
+This project has provided valuable insights into the complexities of machine learning and inspired me to further explore the field. I plan to participate in upcoming Kaggle competitions to deepen my knowledge and accelerate my learning. In the future, I plan to direct my skills towards more regression based problems that can be applied to algorithmic trading scenarios. If you are interested in what is in store keep an eye on this account or reach out via leon.windett@gmail.com
+
+Thank you 
 
 
