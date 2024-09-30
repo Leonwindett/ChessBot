@@ -12,7 +12,7 @@ Special rules, such as castling, en passant, and pawn promotion, are handled by 
 
 ### 2. Model Architecture 
 
-The neural network architecture consists of multiple layers, each designed to capture and process the complex patterns within the game. The model is trained to predict the next move based on the current board state via supervised learning from historical game data.
+The neural network is built with several layers, each aimed at recognizing and processing the complex patterns found in chess. The model is trained to predict the next move based on the current board state via supervised learning from historical game data.
 
 	•	2D Convolutional Layers: Used to scan the 8x8 board to detect strategic patterns like piece formations or tactical opportunities.
 	•	Flatten Layer: Use to reduce the dimensions of the input to a 1D tensor that can be passed onto subsequent layers
@@ -20,7 +20,7 @@ The neural network architecture consists of multiple layers, each designed to ca
 
 ### 3. Training Process
 
-For my optimizer I chose Adam - configured with a learning rate of 0.001. This was chosen over other optimizers because it offers a balance between speed and accuracy which suited this project best. With largely variant gradients in the learning process Adam's adjustable learning rates ensures this optimizer performs best for chess related tasks where some pieces may not move for multiple turns. 
+I selected the Adam optimizer, configured with a learning rate of 0.001, due to its effective balance of speed and accuracy. This choice was particularly suited for the project, as Adam's adjustable learning rates accommodate the highly variable gradients during the learning process. This characteristic is beneficial for chess-related tasks, where certain pieces may remain stationary for multiple turns.
 
 The most suitable loss function to use was 'categorical cross-entropy' as this is a multi-class classification problem. 
 
@@ -28,11 +28,11 @@ The main metrics assessed were accuracy and validation loss.
 
 ### 4. Problems Encountered
 
-Throughout the learning process there has been many struggles as expected.
+Throughout the learning process, I encountered and overcame challenges, as expected in machine learning projects.
 
-The main challenge has been storing enough training data to truly fine-tune the model. For context, ~ 450,000 positions and corresponding 'next moves' after vectorisation takes up 17GB. Moving my storage system for future machine learning projects to the cloud would hopefully fix this problem and allow me to grow my data base. 
+The primary challenge involved managing the storage of sufficient training data to fine-tune the model. For example, vectorizing approximately 450,000 chess positions and corresponding next moves required 17GB of storage.. Transitioning storage systems to the cloud to support scalability and enhance data management for future machine learning projects will enable more efficient database growth and problem resolution
 
-Another problem faced was pushing the saved tensors to GitHub, again due to the file size. After adding the LFS attribute to git I am now able to update the saved folder however it takes an incredibly long time. If there is interest in the vectorised data please feel free to contact me and I can share the files an alternate way!
+Another challenge encountered was uploading saved tensors to GitHub due to their large file size. By enabling the Git LFS (Large File Storage) attribute, I can now update the saved folder, although the process remains time-consuming. If there is interest in the vectorized data, I am open to sharing the files through alternative means.
 
 ### 5. Learning Experience
 
